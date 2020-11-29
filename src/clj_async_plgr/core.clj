@@ -29,3 +29,11 @@
         (>>! c x))
       (go (>! throughput-c :delay))
       (<!! c))))
+
+(let [c (promise-chan)]
+  (go
+    (>!! c "hello")
+    (>!! c "man"))
+  (println (<!! c))
+  (println (<!! c))
+  (close! c))
