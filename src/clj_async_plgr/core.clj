@@ -10,30 +10,25 @@
     (>! c :timeout)
     (close! c)))
 
-(defn get-data-1[]
-  (if (realized? timeout-future)
-    :timeout
-    (do
-      (fn [x]
-        (>>! c x))
-      (go (>! throughput-c :delay))
-      (<!! c))))
-
-(defn get-data-2[]
-  (if (realized? timeout-future)
-    :timeout
-    (do
-      (if (= :timout (first (alts!! [throughput-c c])))
-        :timeout)
-      (fn [x]
-        (>>! c x))
-      (go (>! throughput-c :delay))
-      (<!! c))))
-
-(let [c (promise-chan)]
+(defn a-delay
   (go
-    (>!! c "hello")
-    (>!! c "man"))
-  (println (<!! c))
-  (println (<!! c))
-  (close! c))
+    (<! (timeout 1000))
+    (>! throughput-c :ready)))
+
+(defn get-reviews []
+  (Thread/sleep 2500)
+  {:reviews [
+    {:book {:id 1}}
+    {:book {:id 2}}
+    {:book {:id 3}}]})
+
+(defn w-throughput [f]
+  (if (realized? timeout-future)
+    :timeout
+    (do
+      (if (= :timeout (first (alts!! [throughput-c c])))
+        :timeout
+        (do
+          (>>! c (f))
+          (a-delay)
+          (<!! c))))))
