@@ -10,7 +10,7 @@
     (>! c :timeout)
     (close! c)))
 
-(defn a-delay
+(defn a-delay []
   (go
     (<! (timeout 1000))
     (>! throughput-c :ready)))
@@ -29,3 +29,6 @@
       (<!! throughput-c)
       (a-delay)
       (f))))
+
+(put! throughput-c :ready)
+(w-thrpt-and-timeout get-reviews)
