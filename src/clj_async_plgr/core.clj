@@ -9,3 +9,6 @@
   (close! c))
 (<!! c)
 
+(def timeout-future
+  (future (Thread/sleep 5000)))
+(realized? timeout-future)
