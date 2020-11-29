@@ -3,12 +3,9 @@
 (require '[clojure.core.async :as async :refer :all])
 
 (def throughput-c (chan))
-(def c (chan))
 (def timeout-future
   (future 
-    (Thread/sleep 5000)
-    (>! c :timeout)
-    (close! c)))
+    (Thread/sleep 5000)))
 
 (defn a-delay []
   (go
