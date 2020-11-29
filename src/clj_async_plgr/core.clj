@@ -2,9 +2,7 @@
 
 (require '[clojure.core.async :as async :refer :all])
 
-(let [c1 (chan)]
-  (>!! c1 "hi"))
-
-(let [c1 (chan)]
-  (>!! c1 "hi")
-  (close! c1))
+(let [c1 (timeout 500)
+      c2 (timeout 300)]  
+  (let [[v ch] (alts!! [c1 c2])]
+    (println "Read" v "from" ch)))
