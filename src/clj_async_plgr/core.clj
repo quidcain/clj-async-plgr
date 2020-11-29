@@ -8,4 +8,4 @@
     (let [[v ch] (alts! [c1 c2])]
     (println "Read" v "from" ch)))
   (>!! c1 "hi")
-  (>!! c2 "there"))
+  #_(>!! c2 "there"))
