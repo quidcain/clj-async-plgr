@@ -4,8 +4,8 @@
 
 (let [c1 (chan)
       c2 (chan)]
-  (thread 
-    (let [[v ch] (alts!! [c1 c2])]
-      (println "Read" v "from" ch)))
+  (go
+    (let [[v ch] (alts! [c1 c2])]
+    (println "Read" v "from" ch)))
   (>!! c1 "hi")
   (>!! c2 "there"))
