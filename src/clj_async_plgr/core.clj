@@ -22,13 +22,10 @@
     {:book {:id 2}}
     {:book {:id 3}}]})
 
-(defn w-throughput [f]
+(defn w-thrpt-and-timeout [f]
   (if (realized? timeout-future)
     :timeout
     (do
-      (if (= :timeout (first (alts!! [throughput-c c])))
-        :timeout
-        (do
-          (>>! c (f))
-          (a-delay)
-          (<!! c))))))
+      (<!! throughput-c)
+      (a-delay)
+      (f))))
