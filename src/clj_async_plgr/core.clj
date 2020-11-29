@@ -2,6 +2,7 @@
 
 (require '[clojure.core.async :as async :refer :all])
 
+(def throughput-c (chan))
 (def c (chan))
 (def timeout-future
   (future 
@@ -9,8 +10,22 @@
     (>! c :timeout)
     (close! c)))
 
-(defn get-data[]
-  (when (not (realized? timeout-future))
-    (fn [x]
-      (>!! c x))
-    (<!! c))
+(defn get-data-1[]
+  (if (realized? timeout-future)
+    :timeout
+    (do
+      (fn [x]
+        (>>! c x))
+      (go (>! throughput-c :delay))
+      (<!! c))))
+
+(defn get-data-2[]
+  (if (realized? timeout-future)
+    :timeout
+    (do
+      (if (= :timout (first (alts!! [throughput-c c])))
+        :timeout)
+      (fn [x]
+        (>>! c x))
+      (go (>! throughput-c :delay))
+      (<!! c))))
