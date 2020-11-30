@@ -1,16 +1,24 @@
-(ns clj-async-plgr.core)
+(ns clj-async-plgr.core
+  (:require
+    [clojure.core.async :as a]))
 
-(require '[clojure.core.async :as async :refer :all])
-
-(def throughput-c (chan))
+(def throughput-c (a/chan))
 (def timeout-future
   (future 
-    (Thread/sleep 5000)))
+    (Thread/sleep 1000)))
 
 (defn a-delay []
   (go
-    (<! (timeout 1000))
+    (<! (a/timeout 1000))
     (>! throughput-c :ready)))
+
+(defn w-thrpt-and-timeout [f & args]
+  (if (realized? timeout-future)
+    :timeout
+    (do
+      (<!! throughput-c)
+      (a-delay)
+      (apply f args))))
 
 (defn get-reviews []
   (Thread/sleep 2500)
@@ -19,13 +27,18 @@
     {:book {:id 2}}
     {:book {:id 3}}]})
 
-(defn w-thrpt-and-timeout [f]
-  (if (realized? timeout-future)
-    :timeout
-    (do
-      (<!! throughput-c)
-      (a-delay)
-      (f))))
+(defn get-book-info [id]
+  (Thread/sleep 2500)
+  {:id :id
+   :author "Eric"
+   :rating 4.3})
 
 (put! throughput-c :ready)
-(w-thrpt-and-timeout get-reviews)
+#_(let [get-reviews (partial w-thrpt-and-timeout get-reviews)
+      reviews (get-reviews)]
+  (if-not (= reviews :timeout)
+    reviews
+    :timeout))
+
+((partial w-thrpt-and-timeout get-reviews))
+((partial w-thrpt-and-timeout (fn [] 4)))
