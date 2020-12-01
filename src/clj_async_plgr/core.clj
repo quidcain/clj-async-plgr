@@ -17,7 +17,7 @@
 
 (defn timeout-future [ms]
   (future
-    (Thread/sleep 1000)))
+    (Thread/sleep ms)))
 
 (defn a-delay [c]
   (go
