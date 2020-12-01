@@ -34,15 +34,22 @@
         (a-delay c)
         (apply f args)))))
 
+(defn reviews->recs [reviews]
+  (loop [reviews reviews
+          recs []]
+    (if-let [review (first reviews)]
+      (let [book-info (-> review :book :id get-book-info)]
+        (if (= book-info :timeout)
+          recs
+          (recur (rest reviews) (conj recs book-info))))
+      recs)))
+
 (let [throttle-c (a/chan)
       timeout-future (timeout-future 1000)
       throttle-w-timeout (throttle-w-timeout timeout-future throttle-c)
       get-reviews (partial throttle-w-timeout get-reviews)
       get-book-info (partial throttle-w-timeout get-book-info)
-      reviews (get-reviews)
-    ]
+      reviews (get-reviews)]
   (if-not (= reviews :timeout)
-    (map
-      #(-> % :book :id get-book-info)
-      (:reviews reviews))
+    (reviews->recs (:reviews reviews))
     :timeout))
