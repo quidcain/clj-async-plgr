@@ -24,7 +24,7 @@
     (<! (a/timeout 1000))
     (>! c :ready)))
 
-(defn w-thrpt-and-timeout [ftr c]
+(defn throttle-w-timeout [ftr c]
   (put! c :ready)
   (fn [f & args]
     (if (realized? ftr)
@@ -34,11 +34,11 @@
         (a-delay c)
         (apply f args)))))
 
-(let [throughput-c (a/chan)
+(let [throttle-c (a/chan)
       timeout-future (timeout-future 1000)
-      w-thrpt-and-timeout (w-thrpt-and-timeout timeout-future throughput-c)
-      get-reviews (partial w-thrpt-and-timeout get-reviews)
-      get-book-info (partial w-thrpt-and-timeout get-book-info)
+      throttle-w-timeout (throttle-w-timeout timeout-future throttle-c)
+      get-reviews (partial throttle-w-timeout get-reviews)
+      get-book-info (partial throttle-w-timeout get-book-info)
       reviews (get-reviews)
     ]
   (if-not (= reviews :timeout)
