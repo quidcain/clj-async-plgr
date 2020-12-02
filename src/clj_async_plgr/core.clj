@@ -20,17 +20,17 @@
     (Thread/sleep ms)))
 
 (defn a-delay [c]
-  (go
-    (<! (a/timeout 1000))
-    (>! c :ready)))
+  (a/go
+    (a/<! (a/timeout 1000))
+    (a/>! c :ready)))
 
 (defn throttle-w-timeout [ftr c]
-  (put! c :ready)
+  (a/put! c :ready)
   (fn [f & args]
     (if (realized? ftr)
       :timeout
       (do
-        (<!! c)
+        (a/<!! c)
         (a-delay c)
         (apply f args)))))
 
